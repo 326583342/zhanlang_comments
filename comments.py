@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import re
+import jieba
+from wordcloud import WordCloud, ImageColorGenerator
+import PIL.Image as Image
 # load data
 column_names = ['Votes', 'Useful', 'User', 'Watched', 'Score', 'Date', 'Comment']
 data = pd.read_csv('./data/comments_clean.csv', header=None, names=column_names, skipinitialspace = True, quotechar = '`')
@@ -13,13 +19,12 @@ data['Date'] = data['Date'].astype(str)
 data['Comment'] = data['Comment'].astype(str)
 # clean up the data with error format
 data = data[data['Score'].map(len) == 6]
-data = data[data['Score'] != '看过']
+data = data[data['Score'] != '鐪嬭繃']
 data = data[data['Date'].map(len) == 19]
 print('rows:', data.shape[0], ', columns: ', data.shape[1]) # count rows of total dataset
 # out: ('rows:', 176875, ', columns: ', 7)
-import matplotlib.pyplot as plt
-import numpy as np
 print(data['Score'].value_counts())
+
 index = np.arange(5)
 score_counts = data['Score'].value_counts()
 values = (score_counts[0], score_counts[1], score_counts[2], score_counts[4], score_counts[3])
@@ -36,8 +41,6 @@ for idx, value in zip(index, values):
     plt.text(idx, value + 0.1, '%d' % value, ha='center', va='bottom', fontsize=14, color='black')
 plt.show()
 
-import re
-import jieba
 def segment_words(stars):
     comments = None
     if stars == 'all':
@@ -52,26 +55,9 @@ def segment_words(stars):
             comments_list.append(comment)
     text = ''.join(comments_list)
     word_list = jieba.cut(text, cut_all=True)
-    '''
-    stopwords_list = []
-    # load chinese stop words
-    with open('./data/中文停用词表(1208个).txt') as file:
-        for line in file:
-            stopwords_list.append(line.strip())
-    print(len(stopwords_list))
-    with open('./data/停用词表.txt') as file:
-        for line in file:
-            line = line.strip()
-            if line not in stopwords_list:
-                stopwords_list.append(line)
-    print(len(stopwords_list))
-    # remove stop words from word_list
-    word_list = [word for word in word_list if word not in stopwords_list]
-    '''
     words = ' '.join(word_list)
     return words
-from wordcloud import WordCloud, ImageColorGenerator
-import PIL.Image as Image
+
 def plot_word_cloud(words):
     coloring = np.array(Image.open('./data/chinese.jpg'))
     wc = WordCloud(background_color='white', max_words=2000, mask=coloring, max_font_size=60, random_state=42, 
@@ -85,11 +71,11 @@ def plot_word_cloud(words):
     
 all_words = segment_words('all')
 plot_word_cloud(all_words)
-five_start_words = segment_words('力荐')
+five_start_words = segment_words('鍔涜崘')
 plot_word_cloud(five_start_words)
-four_start_words = segment_words('推荐')
+four_start_words = segment_words('鎺ㄨ崘')
 plot_word_cloud(four_start_words)
-two_start_words = segment_words('较差')
+two_start_words = segment_words('杈冨樊')
 plot_word_cloud(two_start_words)
-one_start_words = segment_words('很差')
+one_start_words = segment_words('寰堝樊')
 plot_word_cloud(one_start_words)
